@@ -1,0 +1,11 @@
+timestamp,text,prediction,confidence,latency_ms
+2026-10-10T20:10:20.994810,This movie is absolutely fantastic! I loved every minute!,Positive,95.46,10.14
+2026-10-10T20:10:20.996274,"Terrible film, complete waste of time.",Negative,95.38,1.21
+2026-10-10T20:10:20.997582,Amazing cinematography and brilliant acting!,Positive,86.47,1.11
+2026-10-10T20:10:20.998822,Worst movie ever made. Don't watch it.,Negative,87.51,1.06
+2026-10-10T20:10:21.000093,"It was okay, nothing special but not bad either.",Positive,55.00,1.08
+2026-10-10T20:10:21.001606,A true masterpiece of modern cinema!,Positive,97.18,1.28
+2026-10-10T20:10:21.003327,The plot was confusing and poorly executed.,Negative,96.80,1.45
+2026-10-10T20:10:21.004937,I was deeply moved by the story. Five stars!,Positive,87.63,1.33
+2026-10-10T20:10:21.006435,Boring from start to finish. I fell asleep.,Negative,73.56,1.09
+2026-10-10T20:10:21.007682,Outstanding performance by the entire cast.,Positive,91.62,1.07

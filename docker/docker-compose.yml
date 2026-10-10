@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+  # ============================================================
+  # SentimentScope API
+  # ============================================================
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: sentimentscope-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MODEL_PATH=/app/models/best_model.pt
+    volumes:
+      - ../models:/app/models
+    depends_on:
+      - mlflow
+    restart: unless-stopped
+    networks:
+      - sentimentscope-net
+
+  # ============================================================
+  # MLflow Tracking Server
+  # ============================================================
+  mlflow:
+    image: python:3.10-slim
+    container_name: sentimentscope-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../mlruns:/mlruns
+    command: >
+      bash -c "
+        pip install mlflow &&
+        mlflow server
+        --host 0.0.0.0
+        --port 5000
+        --backend-store-uri sqlite:////mlruns/mlflow.db
+        --default-artifact-root /mlruns/artifacts
+      "
+    restart: unless-stopped
+    networks:
+      - sentimentscope-net
+
+  # ============================================================
+  # Prometheus Metrics
+  # ============================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sentimentscope-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+    networks:
+      - sentimentscope-net
+
+  # ============================================================
+  # Grafana Dashboard
+  # ============================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sentimentscope-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/sentimentscope.json:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - sentimentscope-net
+
+  # ============================================================
+  # Streamlit Dashboard
+  # ============================================================
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: sentimentscope-dashboard
+    ports:
+      - "8501:8501"
+    command: streamlit run dashboard/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - sentimentscope-net
+
+networks:
+  sentimentscope-net:
+    driver: bridge

@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-10-10T20:10:21.007904",
+  "model": "models/sentiment_model.pkl",
+  "total_tests": 10,
+  "correct": 9,
+  "accuracy": 0.9,
+  "avg_latency_ms": 2.0804405212402344,
+  "test_cases": [
+    {
+      "text": "This movie is absolutely fantastic! I loved every minute!",
+      "expected": 1,
+      "predicted": 1
+    },
+    {
+      "text": "Terrible film, complete waste of time.",
+      "expected": 0,
+      "predicted": 0
+    },
+    {
+      "text": "Amazing cinematography and brilliant acting!",
+      "expected": 1,
+      "predicted": 1
+    },
+    {
+      "text": "Worst movie ever made. Don't watch it.",
+      "expected": 0,
+      "predicted": 0
+    },
+    {
+      "text": "It was okay, nothing special but not bad either.",
+      "expected": 0,
+      "predicted": 1
+    },
+    {
+      "text": "A true masterpiece of modern cinema!",
+      "expected": 1,
+      "predicted": 1
+    },
+    {
+      "text": "The plot was confusing and poorly executed.",
+      "expected": 0,
+      "predicted": 0
+    },
+    {
+      "text": "I was deeply moved by the story. Five stars!",
+      "expected": 1,
+      "predicted": 1
+    },
+    {
+      "text": "Boring from start to finish. I fell asleep.",
+      "expected": 0,
+      "predicted": 0
+    },
+    {
+      "text": "Outstanding performance by the entire cast.",
+      "expected": 1,
+      "predicted": 1
+    }
+  ]
+}

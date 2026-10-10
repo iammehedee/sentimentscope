@@ -1,0 +1,5 @@
+timestamp,text,prediction,confidence,latency_ms
+2026-10-10T20:28:21.674202,This movie is absolutely incredible! I loved every second of it.,Positive,89.62,12.28
+2026-10-10T20:28:23.689958,This movie is absolutely incredible! I loved every second of it.,Positive,89.62,1.73
+2026-10-10T20:28:42.236578,This movie is absolutely incredible! I loved every second of it.,Positive,89.62,2.30
+2026-10-10T20:30:15.017882,This movie is absolutely incredible! I loved every second of it.,Positive,89.62,1.56

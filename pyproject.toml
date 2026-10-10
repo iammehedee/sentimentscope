@@ -1,0 +1,23 @@
+[project]
+name = "sentimentscope"
+version = "1.0.0"
+description = "Production-Grade Sentiment Analysis with Full LLM Ops Pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[project.scripts]
+sentimentscope-train = "src.train:main"
+sentimentscope-serve = "app.main:run"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=src --cov=app --cov-report=term-missing --cov-fail-under=80"

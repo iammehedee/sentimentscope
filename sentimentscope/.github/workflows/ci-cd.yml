@@ -1,0 +1,164 @@
+name: SentimentScope CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.10"
+  MLFLOW_TRACKING_URI: "sqlite:///mlflow.db"
+  HF_HOME: ${{ github.workspace }}/.cache/huggingface
+
+jobs:
+  # ============================================================
+  # Lint & Format Check
+  # ============================================================
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install linting tools
+        run: |
+          pip install black isort flake8 mypy
+
+      - name: Run Black (format check)
+        run: black --check --line-length 100 src/ app/ tests/
+
+      - name: Run isort (import check)
+        run: isort --check-only --profile black src/ app/ tests/
+
+      - name: Run flake8 (lint)
+        run: flake8 --max-line-length 100 src/ app/ tests/
+
+  # ============================================================
+  # Unit & Integration Tests
+  # ============================================================
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: .cache/huggingface
+          key: ${{ runner.os }}-hf-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ -v --cov=src --cov=app --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  # ============================================================
+  # Model Training Validation (small dataset)
+  # ============================================================
+  train-validation:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download small dataset
+        run: python src/data/download.py --dataset sst2 --num-samples 200
+
+      - name: Quick training run (1 epoch)
+        run: |
+          python src/train.py \
+            --dataset sst2 \
+            --epochs 1 \
+            --batch-size 8 \
+            --run-name "ci-test-${{ github.sha }}"
+
+      - name: Upload MLflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-artifacts
+          path: mlruns/
+
+  # ============================================================
+  # Docker Build
+  # ============================================================
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f docker/Dockerfile \
+            -t sentimentscope:${{ github.sha }} \
+            -t sentimentscope:latest \
+            .
+
+      - name: Test Docker image
+        run: |
+          docker run --rm sentimentscope:latest python -c "
+          from src.model.architecture import SentimentClassifier
+          m = SentimentClassifier(num_labels=2)
+          print('✅ Docker image works!')
+          "
+
+  # ============================================================
+  # Deploy (only on main branch)
+  # ============================================================
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [train-validation, docker]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy notification
+        run: |
+          echo "🚀 Deploy step — connect to your cloud provider here"
+          echo "   (AWS ECS, GCP Cloud Run, Azure Container Apps, etc.)"
+          # Add your deployment commands here
