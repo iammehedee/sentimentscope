@@ -1,37 +1,12 @@
-# Environment
-.env
 .venv/
-venv/
-env/
-
-# Python
 __pycache__/
 *.pyc
 *.pyo
-*.egg-info/
-build/
-dist/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-
-# Data & Models (large files)
-data/raw/
-data/processed/
-models/*.bin
-models/*.pt
-models/*.safetensors
-.cache/
-
-# MLflow
-mlruns/
-mlartifacts/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Jupyter
 .ipynb_checkpoints/
+.mlruns/
+data/
+models/
+evaluations/
+*.pkl
+.env
+.DS_Store
